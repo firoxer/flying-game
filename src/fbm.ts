@@ -1,12 +1,14 @@
 import * as THREE from 'three';
 
+import { range } from './utils';
+
 const multiplier = new THREE.Vector2(14.5, 2.7);
 function random(x: number, y: number): number {
   const z = Math.sin(new THREE.Vector2(x, y).dot(multiplier)) * 3232.5335;
   return z - Math.floor(z);
 }
 
-function noise(x: number, y: number): number {
+function morgan3dNoise(x: number, y: number): number {
   const xInteger = Math.floor(x);
   const yInteger = Math.floor(y);
   const xFractional = x - xInteger;
@@ -30,13 +32,23 @@ function noise(x: number, y: number): number {
 export default function fbm(
   x: number,
   y: number,
-  options: { iterations: number; scale: number }
+  options: {
+    amplitude: number;
+    iterations: number;
+    scale: number;
+    turbulenceEnabled: boolean;
+  }
 ) {
   let value = 0;
-  let amplitude = 0.5;
-
-  for (let i = 0; i < options.iterations; i++) {
-    value += amplitude * noise(x * options.scale, y * options.scale);
+  let amplitude = options.amplitude;
+  const noise = options.turbulenceEnabled
+    ? (x: number, y: number): number =>
+        amplitude *
+        Math.abs(morgan3dNoise(x * options.scale, y * options.scale) * 2 - 1)
+    : (x: number, y: number): number =>
+        amplitude * morgan3dNoise(x * options.scale, y * options.scale);
+  for (const _ of range(options.iterations)) {
+    value += noise(x, y);
     x *= 2;
     y *= 2;
     amplitude *= 0.5;

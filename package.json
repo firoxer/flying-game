@@ -9,6 +9,7 @@
   "dependencies": {
     "babel-loader": "^8.2.2",
     "css-loader": "^5.0.2",
+    "dat.gui": "^0.7.7",
     "html-loader": "^2.1.0",
     "html-webpack-plugin": "^5.2.0",
     "prettier": "^2.2.1",
@@ -19,6 +20,7 @@
     "webpack-cli": "^4.5.0"
   },
   "devDependencies": {
+    "@types/dat.gui": "^0.7.6",
     "webpack-dev-server": "^3.11.2"
   }
 }

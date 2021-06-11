@@ -1,62 +1,85 @@
 import * as THREE from 'three';
+//import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import * as dat from 'dat.gui';
 
 import { generateEntities } from './entities/generate';
 
+const settings = {
+  debugCameraEnabled: false,
+  hemisphereLightColorAbove: new THREE.Color('hsl(220, 30%, 90%)').getHex(),
+  hemisphereLightColorBelow: new THREE.Color('hsl(0, 0%, 70%)').getHex(),
+};
+
+const gui = new dat.GUI();
+
 const canvas = document.querySelector('canvas.webgl') as HTMLCanvasElement;
-
-function addCamera(scene: THREE.Scene): THREE.PerspectiveCamera {
-  const camera = new THREE.PerspectiveCamera(75, 0, 0.1, 10000);
-  scene.add(camera);
-  return camera;
-}
-
-function createRenderer(canvas: HTMLCanvasElement): THREE.WebGLRenderer {
-  const renderer = new THREE.WebGLRenderer({
-    canvas,
-    antialias: true,
-  });
-  renderer.setClearColor('hsl(0, 0%, 95%)');
-  renderer.shadowMap.enabled = true;
-
-  return renderer;
-}
-
-function addFog(scene: THREE.Scene): void {
-  scene.fog = new THREE.Fog('hsl(0, 0%, 95%)', 100, 200);
-}
-
-function addAmbientLighting(scene: THREE.Scene): void {
-  const ambientLight = new THREE.AmbientLight('hsl(0, 0%, 100%)', 0.3);
-  scene.add(ambientLight);
-}
-
-function addAirplaneLighting(scene: THREE.Scene): THREE.DirectionalLight {
-  const directionalLight = new THREE.DirectionalLight('hsl(0, 0%, 100%)', 0.7);
-  directionalLight.castShadow = true;
-  directionalLight.shadow.camera.near = 1;
-  directionalLight.shadow.camera.far = 50;
-  directionalLight.shadow.radius = 10;
-  scene.add(directionalLight);
-
-  directionalLight.target = entities.airplane.object;
-  scene.add(directionalLight.target);
-
-  return directionalLight;
-}
 
 const scene = new THREE.Scene();
 
+const camera = new THREE.PerspectiveCamera(75, 0, 0.1, 10000);
+scene.add(camera);
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setClearColor(new THREE.Color(settings.hemisphereLightColorAbove));
+renderer.outputEncoding = THREE.sRGBEncoding;
+
+const updateCamera = () => {
+  if (settings.debugCameraEnabled) {
+    camera.far = 10000;
+    camera.position.set(3000, 5000, 3000);
+    camera.lookAt(0, 0, 0);
+  } else {
+    camera.far = 2000;
+    camera.position.y = 150;
+    camera.position.z = 10;
+  }
+
+  camera.updateProjectionMatrix();
+};
+gui.add(settings, 'debugCameraEnabled').onChange(updateCamera);
+
 const entities = generateEntities();
-scene.add(...Object.values(entities).map(({ object }) => object));
+scene.add(entities.airplane.object, entities.ground.object);
 
-const camera = addCamera(scene);
-camera.position.copy(entities.airplane.object.position);
+// Fog
 
-const renderer = createRenderer(canvas);
+scene.fog = new THREE.Fog(settings.hemisphereLightColorAbove, 400, 500);
 
-addFog(scene);
-addAmbientLighting(scene);
-const airplaneLighting = addAirplaneLighting(scene);
+// Lighting
+
+const hemisphereLight = new THREE.HemisphereLight(
+  settings.hemisphereLightColorAbove,
+  settings.hemisphereLightColorBelow,
+  0.5
+);
+scene.add(hemisphereLight);
+
+const updateHemisphereLightColorAbove = () => {
+  const color = new THREE.Color(settings.hemisphereLightColorAbove);
+  hemisphereLight.color = color;
+  renderer.setClearColor(color);
+};
+gui
+  .addColor(settings, 'hemisphereLightColorAbove')
+  .onChange(updateHemisphereLightColorAbove);
+
+const updateHemisphereLightColorBelow = () => {
+  hemisphereLight.groundColor = new THREE.Color(
+    settings.hemisphereLightColorBelow
+  );
+};
+gui
+  .addColor(settings, 'hemisphereLightColorBelow')
+  .onChange(updateHemisphereLightColorBelow);
+
+const pointLight = new THREE.PointLight(
+  settings.hemisphereLightColorAbove,
+  0.5
+);
+pointLight.position.set(1000, 1000, 1000);
+scene.add(pointLight);
+
+//
 
 const refitViewport = () => {
   const width = window.innerWidth;
@@ -81,20 +104,18 @@ const tick = () => {
 
   entities.airplane.update(elapsedTime);
 
-  camera.quaternion.slerp(
-    entities.airplane.object.quaternion,
-    elapsedTimeDelta * 3
-  );
-  camera.position.lerp(
-    entities.airplane.object.position
-      .clone()
-      .add(new THREE.Vector3(0, 2, 10).applyQuaternion(camera.quaternion)),
-    elapsedTimeDelta * 3
-  );
-
-  airplaneLighting.position
-    .copy(entities.airplane.object.position)
-    .add(new THREE.Vector3(1, 3, 2));
+  if (!settings.debugCameraEnabled) {
+    camera.quaternion.slerp(
+      entities.airplane.object.quaternion,
+      elapsedTimeDelta * 3
+    );
+    camera.position.lerp(
+      entities.airplane.object.position
+        .clone()
+        .add(new THREE.Vector3(0, 2, 10).applyQuaternion(camera.quaternion)),
+      elapsedTimeDelta * 3
+    );
+  }
 
   renderer.render(scene, camera);
 

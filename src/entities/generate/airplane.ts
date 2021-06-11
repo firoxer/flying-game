@@ -7,6 +7,8 @@ export function generateAirplane(): UpdateableEntity {
 
   const material = new THREE.MeshStandardMaterial({
     color: new THREE.Color('hsl(0, 0%, 100%)'),
+    metalness: 0.3,
+    roughness: 0.4,
   });
 
   const mainFuselage = new THREE.Mesh(
@@ -14,7 +16,6 @@ export function generateAirplane(): UpdateableEntity {
     material
   );
   mainFuselage.position.set(0, 0, 0.25);
-  mainFuselage.castShadow = true;
   airplane.add(mainFuselage);
 
   const sternFuselage = new THREE.Mesh(
@@ -22,12 +23,10 @@ export function generateAirplane(): UpdateableEntity {
     material
   );
   sternFuselage.position.set(0, 0, 2.25);
-  sternFuselage.castShadow = true;
   airplane.add(sternFuselage);
 
   const cabin = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 2.5), material);
   cabin.position.set(0, 0, 0);
-  cabin.castShadow = true;
   airplane.add(cabin);
 
   const leftWheel = new THREE.Mesh(
@@ -35,7 +34,6 @@ export function generateAirplane(): UpdateableEntity {
     material
   );
   leftWheel.position.set(-0.5, -0.5, 0);
-  leftWheel.castShadow = true;
   airplane.add(leftWheel);
 
   const rightWheel = new THREE.Mesh(
@@ -43,7 +41,6 @@ export function generateAirplane(): UpdateableEntity {
     material
   );
   rightWheel.position.set(0.5, -0.5, 0);
-  rightWheel.castShadow = true;
   airplane.add(rightWheel);
 
   const propellerMount = new THREE.Mesh(
@@ -51,7 +48,6 @@ export function generateAirplane(): UpdateableEntity {
     material
   );
   propellerMount.position.set(0, 0, -1.625);
-  propellerMount.castShadow = true;
   airplane.add(propellerMount);
 
   const propeller = new THREE.Mesh(
@@ -59,12 +55,10 @@ export function generateAirplane(): UpdateableEntity {
     material
   );
   propeller.position.set(0, 0, -1.625);
-  propeller.castShadow = true;
   airplane.add(propeller);
 
   const wings = new THREE.Mesh(new THREE.BoxGeometry(7.5, 0.2, 1.25), material);
   wings.position.set(0, 0.5, 0);
-  wings.castShadow = true;
   airplane.add(wings);
 
   const horizontalStabilizer = new THREE.Mesh(
@@ -72,7 +66,6 @@ export function generateAirplane(): UpdateableEntity {
     material
   );
   horizontalStabilizer.position.set(0, 0, 2.875);
-  horizontalStabilizer.castShadow = true;
   airplane.add(horizontalStabilizer);
 
   const verticalStabilizer = new THREE.Mesh(
@@ -80,11 +73,10 @@ export function generateAirplane(): UpdateableEntity {
     material
   );
   verticalStabilizer.position.set(0, 0.5, 3);
-  verticalStabilizer.castShadow = true;
   airplane.add(verticalStabilizer);
 
   airplane.rotation.set(Math.PI * 0.05, 0, 0);
-  airplane.position.set(0, 150, 0);
+  airplane.position.set(0, 200, 0);
 
   const update = (elapsedTime: number): void => {
     propeller.rotation.set(0, 0, elapsedTime * 20);

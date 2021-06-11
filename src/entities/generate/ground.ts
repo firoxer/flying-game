@@ -38,8 +38,12 @@ export function generateGround(): Entity {
       index / (config.ground.width / config.ground.resolution + 1)
     );
     const y = index % (config.ground.width / config.ground.resolution + 1);
-    positions[index * 3 + 2] =
-      fbm(x, y, { iterations: 8, scale: 1 / 16 }) * 256;
+    positions[index * 3 + 2] = fbm(x, y, {
+      amplitude: 128,
+      iterations: 16,
+      scale: 1 / 128,
+      turbulenceEnabled: true,
+    });
   }
 
   geometry.computeVertexNormals();
